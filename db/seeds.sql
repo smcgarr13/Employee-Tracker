@@ -20,7 +20,7 @@ VALUES ("Director", 225000, 1),
        ("Sr. Technical Deisgner", 150000, 2),
        ("Technical Designer", 80000, 2),
        ("Associate Technical Designer", 55000, 2),
-       ("Assistant Technical Designer", 40000, 2)
+       ("Assistant Technical Designer", 40000, 2),
        ("Sr. Buyer", 150000, 3),
        ("Buyer", 80000, 3),
        ("Associate Buyer", 55000, 3),
@@ -45,3 +45,6 @@ VALUES ("Lexi", "Gray", 2, NULL),
        ("Ismael", "Elliott", 12, 10),
        ("Liam", "Park", 13, 12),
        ("Lacey", "O'Neill", 14, 12);
+
+       ALTER TABLE employee
+       ADD FOREIGN KEY (role_id) REFERENCES role(id);
