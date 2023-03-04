@@ -53,10 +53,11 @@ const questions = [
       },
   ];
 
-  inquirer.prompt(questions).then(answers => {
-    // The selected choice is available in answers.menu
-    console.log(`You selected: ${answers.menu}`);
-  });
+//   inquirer.prompt(questions).then(answers => {
+//     // The selected choice is available in answers.menu
+//     console.log(`You selected: ${answers.menu}`);
+//   });
+
 
 // function to show all departments
 function showDepartments() {
