@@ -42,4 +42,3 @@ CREATE TABLE employee (
 -- --   REFERENCES book_prices(id)
 -- --   ON DELETE SET NULL
 -- );
-
