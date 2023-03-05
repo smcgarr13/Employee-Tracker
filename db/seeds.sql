@@ -1,10 +1,4 @@
 
--- INSERT INTO department (id, name)
--- VALUES ("Design", 1),
---        ("Technical Design", 2),
---        ("Merchandising", 3),
---        ("Sourcing", 4);
-
 INSERT INTO department (name)
 VALUES ("Design"),
        ("Merchandising"),

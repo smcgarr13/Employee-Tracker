@@ -2,7 +2,7 @@ const inquirer = require("inquirer");
 const mysql = require("mysql2");
 const consoleTable = require("console.table");
 const express = require("express");
-const artwork = require('/Users/mchong/bootcamp/Module-12/Employee-Tracker/ascii/ascii-art');
+const figlet = require('figlet');
 const fs = require('fs');
 
 const PORT = process.env.PORT || 3001;
@@ -41,18 +41,22 @@ const db = mysql.createConnection(
 //   });
 
 // ascii graphic
-app.get('/', (req, res) => {
-    res.send(artwork);
-  });
+figlet('Employee Manager', function(err, data) {
+    if (err) {
+        console.log('Something went wrong...');
+        console.dir(err);
+        return;
+    }
+    console.log(data)
+});
   
-
 // quetions for initial inquirer prompt
 const questions = [
     {
         type: "list",
         name: "menu",
         message: "What would you like to do?",
-        choices: ["View All Departments", "View All Roles", "View All Employees", "Add A Department", "Add Role", "Add Employee", "Update Employee Role", "Update Employee Manager", "View Employees By Manager", "Delete Department", "Delete Role", "Delete Employee"]
+        choices: ["View All Departments", "View All Roles", "View All Employees", "Add A Department", "Add Role", "Add Employee", "Update Employee Role", "Update Employee Manager", "View Employees By Manager", "Get Total Budget By Department", "Delete Department", "Delete Role", "Delete Employee"]
       },
   ];
 
@@ -98,6 +102,14 @@ const questions = [
             viewEmployeesByManager();
             break;
 
+        case "View Employees By Department":
+            viewEmployeesByDepartment();
+        break;
+
+        case "Get Total Budget By Department":
+            getTotalDepartmentBudget(department);
+        break;
+
         case "Delete Department":
             deleteDepartment(id)
             break;
@@ -110,44 +122,12 @@ const questions = [
             deleteEmployee(id)
             break;
 
-        case "View Employees By Department":
-            viewEmployeesByDepartment();
-        break;
-
         default:
             Connection.end();
             console.log("Invaild choice")
     }
 
   });
-
-
-
-//   inquirer.prompt(questions).then(answers => {
-//     // The selected choice is available in answers.menu
-//     console.log(`You selected: ${answers.menu}`);
-//   });
-  
-// function promptUser() {
-//     inquirer.prompt(questions).then(answers => {
-//         console.log(`You selected: ${answers.menu}`);
-//         // ask user if they'd like to continue
-//         inquirer.prompt([
-//             {
-//                 type: "confirm",
-//                 name: "continue",
-//                 message: "Do you want to continue?",
-//                 default: true
-//             }
-//         ]).then(answer => {
-//             if (answer.continue) {
-//                 promptUser();
-//             }else{
-//                 console.log("Goodbye!😎");
-//             }
-//         })
-//     })
-// }
 
 // function to show all departments
 function showDepartments() {
@@ -188,7 +168,7 @@ function addDepartment() {
 }
     ]).then(answers => {
         const {name} = answers;
-        const sql = 'INSERT INTO departments (name) VALUES (?)';
+        const sql = 'INSERT INTO department (name) VALUES (?)';
         db.query(sql, [name], (err, result) => {
             if (err) {
                 console.log(err);
@@ -219,7 +199,7 @@ function addRole() {
     message: "What is the department ID for this role?",
 },
 ]).then(answers => {
-        db.query("INSERT INTO roles SET ?",
+        db.query("INSERT INTO role SET ?",
             {
               title: answers.name,
               salary: answers.salary,
@@ -236,7 +216,7 @@ function addRole() {
 // I am prompted to enter the employee’s first name, last name, role, and manager, and that employee is added to the database
 function addEmployee() {
     // query the database to get a list of roles to choose from
-    db.query("SELECT * FROM roles", (err, results) => {
+    db.query("SELECT * FROM role", (err, results) => {
         if (err) {
             console.log(err);
             return;
@@ -247,7 +227,7 @@ function addEmployee() {
             value: role.id,
         }));
          // query the database to get a list of managers to choose from
-        db.query("SELECT * FROM employees WHERE manager_id IS NULL", (err, results) => {
+        db.query("SELECT * FROM employee WHERE manager_id IS NULL", (err, results) => {
             if (err) {
                 console.log(err);
                 return;
@@ -283,7 +263,7 @@ function addEmployee() {
     ])
     .then((answers) => {
         db.query(
-            "INSERT INTO employees SET ?",
+            "INSERT INTO employee SET ?",
             {
                 first_name: answers.first_name,
                 last_name: answers.last_name,
@@ -295,7 +275,7 @@ function addEmployee() {
                     console.log(err);
                     return;
                 }
-                    console.log(`new emplyee ${answers.first_name} ${answers.last_name} has been added to the database.`);
+                    console.log(`New employee ${answers.first_name} ${answers.last_name} has been added to the database.`);
                 }
             );
         });
