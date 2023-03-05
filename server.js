@@ -3,9 +3,16 @@ const mysql = require("mysql2");
 const consoleTable = require("console.table");
 const express = require("express");
 const artwork = require('/Users/mchong/bootcamp/Module-12/Employee-Tracker/ascii/ascii-art');
+const fs = require('fs');
 
 const PORT = process.env.PORT || 3001;
 const app = express();
+
+const stream = fs.createReadStream('myfile.txt');
+
+stream.on('error', (err) => {
+  console.error('An error occurred:', err);
+});
 
 // middleware
 app.use(express.json());
@@ -13,11 +20,9 @@ app.use(express.json());
 // connect to database
 const db = mysql.createConnection(
     {
-      host: 'localhost',
-      // MySQL username,
+      host: '127.0.0.1',
       user: 'root',
-      // TODO: Add MySQL password
-      password: '',
+      password: '*Sunshine123*',
       database: 'employee_db'
     },
     console.log(`Connected to the employee_db database.`)
@@ -31,33 +36,118 @@ const db = mysql.createConnection(
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
-
+//   app.listen(3001, () => {
+//     console.log('Server started on port 3001');
+//   });
 
 // ascii graphic
 app.get('/', (req, res) => {
     res.send(artwork);
   });
   
-//   app.listen(3001, () => {
-//     console.log('Server started on port 3001');
-//   });
 
-
-// initial inquirer prompt
+// quetions for initial inquirer prompt
 const questions = [
     {
         type: "list",
         name: "menu",
         message: "What would you like to do?",
-        choices: ["View All Departments", "View All Roles", "View All Employees", "Add A Department", "Add Role", "Add Employee", "Update Employee Role", "Update Employee Manager", "Delete Department", "Delete Role", "Delete Employee"]
+        choices: ["View All Departments", "View All Roles", "View All Employees", "Add A Department", "Add Role", "Add Employee", "Update Employee Role", "Update Employee Manager", "View Employees By Manager", "Delete Department", "Delete Role", "Delete Employee"]
       },
   ];
+
+  // initial inquirer prompt
+  inquirer.prompt(questions).then(answers => {
+    // The selected choice is available in answers.menu
+    console.log(`You selected: ${answers.menu}`);
+
+    switch (answers.menu) {
+        case "View All Departments":
+            showDepartments();
+            break;
+
+        case "View All Roles":
+            viewAllRoles();
+            break;
+
+        case "View All Employees":
+            viewAllEmployees();
+            break;
+
+        case "Add A Department":
+            addDepartment();
+            break;
+
+        case "Add Role":
+            addRole();
+            break;
+
+        case "Add Employee":
+            addEmployee();
+            break;
+
+        case "Update Employee Role":
+            updateEmployeeRole();
+            break;
+
+        case "Update Employee Manager":
+            updateEmployeeManager()
+            break;
+        
+        case "View Employees By Manager":
+            viewEmployeesByManager();
+            break;
+
+        case "Delete Department":
+            deleteDepartment(id)
+            break;
+
+        case "Delete Role":
+            deleteRole(id)
+            break;
+
+        case "Delete Employee":
+            deleteEmployee(id)
+            break;
+
+        case "View Employees By Department":
+            viewEmployeesByDepartment();
+        break;
+
+        default:
+            Connection.end();
+            console.log("Invaild choice")
+    }
+
+  });
+
+
 
 //   inquirer.prompt(questions).then(answers => {
 //     // The selected choice is available in answers.menu
 //     console.log(`You selected: ${answers.menu}`);
 //   });
-
+  
+// function promptUser() {
+//     inquirer.prompt(questions).then(answers => {
+//         console.log(`You selected: ${answers.menu}`);
+//         // ask user if they'd like to continue
+//         inquirer.prompt([
+//             {
+//                 type: "confirm",
+//                 name: "continue",
+//                 message: "Do you want to continue?",
+//                 default: true
+//             }
+//         ]).then(answer => {
+//             if (answer.continue) {
+//                 promptUser();
+//             }else{
+//                 console.log("Goodbye!😎");
+//             }
+//         })
+//     })
+// }
 
 // function to show all departments
 function showDepartments() {
@@ -69,7 +159,7 @@ function showDepartments() {
 
 // function to show all roles
 function viewAllRoles() {
-    db.query("SELECT * FROM roles", (err, results) => {
+    db.query("SELECT * FROM role", (err, results) => {
       if (err) {
         console.log(err);
       }
@@ -79,7 +169,7 @@ function viewAllRoles() {
 
 // function to show all employees
 function viewAllEmployees() {
-    db.query("SELECT * FROM employees", (err, results) => {
+    db.query("SELECT * FROM employee", (err, results) => {
       if (err) {
         console.log(err);
       }
@@ -103,7 +193,7 @@ function addDepartment() {
             if (err) {
                 console.log(err);
             }
-            console.log('Department "${name}" has been added to the database.');
+            console.log(`Department "${name}" has been added to the database.`);
         });
     });
 }
@@ -131,7 +221,7 @@ function addRole() {
 ]).then(answers => {
         db.query("INSERT INTO roles SET ?",
             {
-              title: answers.title,
+              title: answers.name,
               salary: answers.salary,
               department_id: answers.department_id,
             },
@@ -205,9 +295,7 @@ function addEmployee() {
                     console.log(err);
                     return;
                 }
-                    console.log(
-                        `new emplyee ${answers.first_name} ${answers.last_name} has been added to the database.`
-                    );
+                    console.log(`new emplyee ${answers.first_name} ${answers.last_name} has been added to the database.`);
                 }
             );
         });
@@ -245,11 +333,106 @@ function updateEmployeeRole() {
 
 
 // function to update employee managers
-
+function updateEmployeeManager() {
+    inquirer.prompt([
+        {
+            type: "number",
+            name: "employee_id",
+            message: "Enter the Id for the employee you'd like to update:"
+        },
+        {
+            type: "number",
+            name: "manager_id",
+            message: "Enter the Id of the new manager for this employee:"  
+        },
+    ]).then(answers => {
+        db.query("UPDATE employees SET manager_id = ? WHERE id = ?", [answers.manager_id, answers.employee_id], (err, results) => {
+            if (err) throw err;
+            console.log(err);
+            }
+        );
+    });
+}
 // function to view employees by manager
-
+function viewEmployeesByManager() {
+    inquirer.prompt([
+        {
+            type: "input",
+            name: "managerId",
+            message: "Enter the manager's Id"
+        },
+    ]).then(answers => {
+        const {managerId} = answers;
+        const sql = "SELECT * FROM employee WHERE manager_id = ?";
+        db.query(sql, [managerId], (err, results) => {
+            if (err) {
+                console.log(err);
+            }
+            console.table(results);
+        });
+    });
+}
 // function to view employees by department
+function viewEmployeesByDepartment() {
+    inquirer.prompt([
+        {
+            type: "input",
+            name: "department",
+            message: "Enter the name of the department:",
+        },
+    ]).then((answers) => {
+        const department = answers.department;
+        const sql = `
+        SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name
+        FROM employee
+        LEFT JOIN role ON employee.role_id = role.id
+        LEFT JOIN department ON role.department_id = department.id
+        WHERE department.name = ?`;
+    db.query(sql, [department], (err, results) => {
+        if (err) throw err;
+        console.table(results);
+        });
+    });
+}
 
-// function to delete departments, roles, and employees
+// function to delete department
+function deleteDepartment(id) {
+    Connection.query("DELETE FROM department WHERE id = ?",
+    [id],
+    function (err, res) {
+        if (err) throw err;
+        console.log(`Department with id ${id} has been deleted.`);
+    }
+    );
+}
+// function to delete role
+function deleteRole(id) {
+    Connection.query("DELETE FROM role WHERE id = ?",
+    [id],
+    function (err, res) {
+        if (err) throw err;
+        console.log(`Role with id ${id} has been deleted.`);
+    }
+    );
+}
 
+// function to delete employee
+function deleteEmployee(id) {
+    Connection.query("DELETE FROM employee WHERE id = ?",
+    [id],
+    function (err, res) {
+        if (err) throw err;
+        console.log(`Employee with id ${id} has been deleted.`);
+    }
+    );
+}
 // function to view the total utilized budget of a department—in other words, the combined salaries of all employees in that department
+function getTotalDepartmentBudget(department) {
+    let totalBudget = 0;
+    for (let i = 0; i < employees.length; i++) {
+        if (employees[i].department === department) {
+            totalBudget += employees[i].salary;
+        }
+    }
+    return totalBudget;
+}
