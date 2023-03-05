@@ -11,3 +11,9 @@ LEFT JOIN role r ON e.role_id = r.id
 LEFT JOIN department d ON r.department_id = d.id
 LEFT JOIN employee m ON e.manager_id = m.id
 ORDER BY e.id;
+
+SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name
+FROM employee
+LEFT JOIN role ON employee.role_id = role.id
+LEFT JOIN department ON role.department_id = department.id
+WHERE department.name = 'Design';
