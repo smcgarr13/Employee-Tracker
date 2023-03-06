@@ -56,7 +56,7 @@ const questions = [
         type: "list",
         name: "menu",
         message: "What would you like to do?",
-        choices: ["View All Departments", "View All Roles", "View All Employees", "Add A Department", "Add Role", "Add Employee", "Update Employee Role", "Update Employee Manager", "View Employees By Manager", "Get Total Budget By Department", "Delete Department", "Delete Role", "Delete Employee"]
+        choices: ["View All Departments", "View All Roles", "View All Employees", "Add A Department", "Add Role", "Add Employee", "Update Employee Role", "Update Employee Manager", "View Employees By Manager", "View Employees By Department", "Get Total Budget By Department", "Delete Department", "Delete Role", "Delete Employee"]
       },
   ];
 
@@ -107,19 +107,19 @@ const questions = [
         break;
 
         case "Get Total Budget By Department":
-            getTotalDepartmentBudget(department);
+            getTotalDepartmentBudget();
         break;
 
         case "Delete Department":
-            deleteDepartment(id)
+            deleteDepartment()
             break;
 
         case "Delete Role":
-            deleteRole(id)
+            deleteRole()
             break;
 
         case "Delete Employee":
-            deleteEmployee(id)
+            deleteEmployee()
             break;
 
         default:
@@ -149,13 +149,29 @@ function viewAllRoles() {
 
 // function to show all employees
 function viewAllEmployees() {
-    db.query("SELECT * FROM employee", (err, results) => {
+const sql = `
+    SELECT e.id, e.first_name, e.last_name, r.title, d.name AS department, r.salary, CONCAT(m.first_name, ' ', m.last_name) AS manager_name
+    FROM employee e
+    LEFT JOIN role r ON e.role_id = r.id
+    LEFT JOIN department d ON r.department_id = d.id
+    LEFT JOIN employee m ON e.manager_id = m.id
+    ORDER BY e.id;
+`;
+    db.query(sql, (err, results) => {
       if (err) {
         console.log(err);
       }
       console.table(results);
     });
   }
+// function viewAllEmployees() {
+//     db.query("SELECT * FROM employee", (err, results) => {
+//       if (err) {
+//         console.log(err);
+//       }
+//       console.table(results);
+//     });
+//   }
 
 // function to add a department
 // I am prompted to enter the name of the department and that department is added to the database
@@ -287,7 +303,7 @@ function addEmployee() {
 // function to update an employee role
 // I am prompted to select an employee to update and their new role and this information is updated in the database
 function updateEmployeeRole() {
-    db.query("SELECT id, first_name, last_name, FROM employees", (err, results) => {
+    db.query("SELECT id, first_name, last_name, FROM employee", (err, results) => {
         if (err) {
             console.log(err);
         }
@@ -295,12 +311,17 @@ function updateEmployeeRole() {
         inquirer.prompt([
             {
                 type: "number",
+                name: "id",
+                message: "Enter the role ID for the employee you would like to update:"
+            },
+            {
+                type: "number",
                 name: "roleId",
                 message: "Enter the new role ID for the employee:"
             }
-        ]).then(corners => {
+        ]).then(answers => {
             db.query(
-                "UPDATE employees SET role_id = ? WHERE id = ?",
+                "UPDATE employee SET role_id = ? WHERE id = ?",
                 [answers.roleId, answers.id],
                 (err, result) => {
                     if (err) throw err;
@@ -360,59 +381,236 @@ function viewEmployeesByDepartment() {
             name: "department",
             message: "Enter the name of the department:",
         },
-    ]).then((answers) => {
-        const department = answers.department;
-        const sql = `
-        SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name
-        FROM employee
-        LEFT JOIN role ON employee.role_id = role.id
-        LEFT JOIN department ON role.department_id = department.id
-        WHERE department.name = ?`;
+    ]).then(answers => {
+        const {department} = answers;
+        const sql =`
+        SELECT e.id, e.first_name, e.last_name, r.title, d.name AS department, CONCAT(m.first_name, ' ', m.last_name) AS manager_name
+        FROM employee e
+        LEFT JOIN role r ON e.role_id = r.id
+        LEFT JOIN department d ON r.department_id = d.id
+        LEFT JOIN employee m ON e.manager_id = m.id
+        WHERE d.name = ?
+        ORDER BY e.id;
+      `;
+    //   SELECT e.id, e.first_name, e.last_name, r.title, d.name AS department, r.salary, CONCAT(m.first_name, ' ', m.last_name) AS manager_name
+    
     db.query(sql, [department], (err, results) => {
-        if (err) throw err;
+        if (err){
+        console.log(err);
+        }
         console.table(results);
         });
     });
 }
 
 // function to delete department
-function deleteDepartment(id) {
-    Connection.query("DELETE FROM department WHERE id = ?",
-    [id],
-    function (err, res) {
-        if (err) throw err;
-        console.log(`Department with id ${id} has been deleted.`);
-    }
-    );
+function deleteDepartment() {
+// get list of existing departments
+db.query('SELECT * FROM department', (err, results) => {
+if (err) {
+    console.log(err);
 }
-// function to delete role
-function deleteRole(id) {
-    Connection.query("DELETE FROM role WHERE id = ?",
-    [id],
-    function (err, res) {
-        if (err) throw err;
-        console.log(`Role with id ${id} has been deleted.`);
+const departmentChoices = results.map(department => {
+    return {
+        name: department.name,
+        value: department.id
     }
-    );
+  });
+
+    inquirer.prompt([
+        {
+            type: "list",
+            name: "department_id",
+            message: "Which department would you like to delete?",
+            choices: departmentChoices
+        }
+    ]).then(answers => {
+        const departmentId = answers.department_id;
+        const sql = 'DELETE FROM department WHERE id = ?';
+        db.query(sql, [departmentId, departmentId], (err, result) => {
+            if (err) {
+                console.log(err);
+            } else {
+                if (result.length > 0 && result[0].length > 0) {
+                const departmentName = result[0][0].name;
+                console.log(`Department ${departmentName} with ID ${departmentId} has been deleted from the database.`);
+            } else {
+                console.log(`Department with ID ${departmentId} has been deleted from the database.`);
+            }
+          }
+        });
+    });
+  });
 }
 
-// function to delete employee
-function deleteEmployee(id) {
-    Connection.query("DELETE FROM employee WHERE id = ?",
-    [id],
-    function (err, res) {
-        if (err) throw err;
-        console.log(`Employee with id ${id} has been deleted.`);
+
+
+// function deleteDepartment(id) {
+//     Connection.query("DELETE FROM department WHERE id = ?",
+//     [id],
+//     function (err, res) {
+//         if (err) throw err;
+//         console.log(`Department with id ${id} has been deleted.`);
+//     }
+//     );
+// }
+
+
+// function to delete role
+function deleteRole() {
+ // get list of existing roles
+ db.query('SELECT * FROM role', (err, results) => {
+    if (err) {
+        console.log(err);
     }
-    );
-}
-// function to view the total utilized budget of a department—in other words, the combined salaries of all employees in that department
-function getTotalDepartmentBudget(department) {
-    let totalBudget = 0;
-    for (let i = 0; i < employees.length; i++) {
-        if (employees[i].department === department) {
-            totalBudget += employees[i].salary;
+    const roleChoices = results.map(role => {
+        return {
+            name: role.title,
+            value: role.id
         }
-    }
-    return totalBudget;
+    });
+    inquirer.prompt([
+        {
+            type: "list",
+            name: "role_id",
+            message: "Which role would you like to delete?",
+            choices: roleChoices
+        }
+    ]).then(answers => {
+        const roleId = answers.role_id;
+        const sql = 'DELETE FROM role WHERE id = ?';
+        db.query(sql, [roleId], (err, result) => {
+            if (err) {
+                console.log(err);
+            } else if (result.affectedRows === 0) {
+                console.log(`Role with the ID ${roleId} does not exist.`)
+            } else {
+                console.log(`Role with ID ${roleId} has been deleted from the database.`)
+            }
+        });
+    });
+ });
 }
+
+
+
+// function deleteRole() {
+//     inquirer.prompt([
+//         {
+//             type: "input",
+//             name: "role_id",
+//             message: "Enter the ID of the role you would like to delete:"
+//         }
+//     ]).then(answers => {
+//         const {role_id} = answers;
+//         const sql = 'DELETE FROM role WHERE id = ?';
+//         db.query(sql, [role_id], (err, result) => {
+//             if (err) {
+//                 console.log(err);
+//             } else if (result.affectedRows === 0) {
+//                 console.log(`Role with ID ${role_id} does not exist.`);
+//             } else {
+//                 console.log(`Role with ID ${role_id} has been deleted.`);
+//             }
+//         });
+//     });
+// }
+
+
+// function deleteRole(connection, id) {
+//     connection.query("DELETE FROM role WHERE id = ?",
+//     [id],
+//     function (err, res) {
+//         if (err) throw err;
+//         console.log(`Role with id ${id} has been deleted.`);
+//     }
+//     );
+// }
+
+// function to delete employee
+function deleteEmployee() {
+    // get list of existing employees
+    db.query('SELECT * FROM employee', (err, results) => {
+    if (err) {
+        console.log(err);
+    }
+    const employeeChoices = results.map(employee => {
+        return {
+            name: `${employee.first_name} ${employee.last_name}`,
+            value: employee.id
+        }
+      });
+    
+        inquirer.prompt([
+            {
+                type: "list",
+                name: "employee_id",
+                message: "Which employee would you like to delete?",
+                choices: employeeChoices
+            }
+        ]).then(answers => {
+            const employeeId = answers.employee_id;
+            const sql = 'DELETE FROM employee WHERE id = ?';
+            db.query(sql, [employeeId], (err, result) => {
+                if (err) {
+                    console.log(err);
+                } else {
+                    console.log(`Employee with ID ${employeeId} has been deleted from the database. `);
+                }
+            });
+        });
+      });
+    }
+
+
+// function deleteEmployee(id) {
+//     Connection.query("DELETE FROM employee WHERE id = ?",
+//     [id],
+//     function (err, res) {
+//         if (err) throw err;
+//         console.log(`Employee with id ${id} has been deleted.`);
+//     }
+//     );
+// }
+
+
+// function to view the total utilized budget of a department—in other words, the combined salaries of all employees in that department
+function getTotalDepartmentBudget() {
+    inquirer.prompt([
+        {
+            type: "imput",
+            name: "departmentName",
+            message: "Enter the name of the department:",
+        },
+    ]).then(answers => {
+        const {departmentName} = answers;
+        const sql = 
+        `SELECT SUM(salary) AS total_budget
+        FROM employee e
+        JOIN role r ON e.role_id = r.id
+        JOIN department d ON r.department_id = d.id
+        WHERE d.name = ?`;
+    db.query(sql, departmentName, (err, results) => {
+        if (err) {
+            console.log(err);
+        }
+        console.log(`The total budget for ${departmentName} is ${results[0].total_budget}`);
+    });
+  });
+}
+
+
+
+// const department = "Sales";
+// const totalBudget = getTotalDepartmentBudget(department);
+// console.log(`Total budget for ${department} department is ${totalBudget}`);
+
+// function getTotalDepartmentBudget(department) {
+//     let totalBudget = 0;
+//     for (let i = 0; i < employee.length; i++) {
+//         if (employee[i].department === department) {
+//             totalBudget += employee[i].salary;
+//         }
+//     }
+//     return totalBudget;
+// }
