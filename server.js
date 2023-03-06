@@ -164,14 +164,6 @@ const sql = `
       console.table(results);
     });
   }
-// function viewAllEmployees() {
-//     db.query("SELECT * FROM employee", (err, results) => {
-//       if (err) {
-//         console.log(err);
-//       }
-//       console.table(results);
-//     });
-//   }
 
 // function to add a department
 // I am prompted to enter the name of the department and that department is added to the database
@@ -443,19 +435,6 @@ const departmentChoices = results.map(department => {
   });
 }
 
-
-
-// function deleteDepartment(id) {
-//     Connection.query("DELETE FROM department WHERE id = ?",
-//     [id],
-//     function (err, res) {
-//         if (err) throw err;
-//         console.log(`Department with id ${id} has been deleted.`);
-//     }
-//     );
-// }
-
-
 // function to delete role
 function deleteRole() {
  // get list of existing roles
@@ -492,41 +471,6 @@ function deleteRole() {
  });
 }
 
-
-
-// function deleteRole() {
-//     inquirer.prompt([
-//         {
-//             type: "input",
-//             name: "role_id",
-//             message: "Enter the ID of the role you would like to delete:"
-//         }
-//     ]).then(answers => {
-//         const {role_id} = answers;
-//         const sql = 'DELETE FROM role WHERE id = ?';
-//         db.query(sql, [role_id], (err, result) => {
-//             if (err) {
-//                 console.log(err);
-//             } else if (result.affectedRows === 0) {
-//                 console.log(`Role with ID ${role_id} does not exist.`);
-//             } else {
-//                 console.log(`Role with ID ${role_id} has been deleted.`);
-//             }
-//         });
-//     });
-// }
-
-
-// function deleteRole(connection, id) {
-//     connection.query("DELETE FROM role WHERE id = ?",
-//     [id],
-//     function (err, res) {
-//         if (err) throw err;
-//         console.log(`Role with id ${id} has been deleted.`);
-//     }
-//     );
-// }
-
 // function to delete employee
 function deleteEmployee() {
     // get list of existing employees
@@ -562,18 +506,6 @@ function deleteEmployee() {
       });
     }
 
-
-// function deleteEmployee(id) {
-//     Connection.query("DELETE FROM employee WHERE id = ?",
-//     [id],
-//     function (err, res) {
-//         if (err) throw err;
-//         console.log(`Employee with id ${id} has been deleted.`);
-//     }
-//     );
-// }
-
-
 // function to view the total utilized budget of a department—in other words, the combined salaries of all employees in that department
 function getTotalDepartmentBudget() {
     inquirer.prompt([
@@ -598,19 +530,3 @@ function getTotalDepartmentBudget() {
     });
   });
 }
-
-
-
-// const department = "Sales";
-// const totalBudget = getTotalDepartmentBudget(department);
-// console.log(`Total budget for ${department} department is ${totalBudget}`);
-
-// function getTotalDepartmentBudget(department) {
-//     let totalBudget = 0;
-//     for (let i = 0; i < employee.length; i++) {
-//         if (employee[i].department === department) {
-//             totalBudget += employee[i].salary;
-//         }
-//     }
-//     return totalBudget;
-// }
