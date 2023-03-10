@@ -22,10 +22,17 @@ LEFT JOIN role ON employee.role_id = role.id
 LEFT JOIN department ON role.department_id = department.id
 WHERE department.name = 'Design';
 
+-- view all managers
+SELECT m.id AS manager_id, 
+       CONCAT(m.first_name, ' ', m.last_name) AS manager_name, 
+       GROUP_CONCAT(CONCAT(e.first_name, ' ', e.last_name) SEPARATOR ', ') AS employees
+FROM employee e
+LEFT JOIN employee m ON e.manager_id = m.id
+GROUP BY manager_id, manager_name;
+
 -- total budget by department
 SELECT SUM(salary) AS total_budget
 FROM employee e
 JOIN role r ON e.role_id = r.id
 JOIN department d ON r.department_id = d.id
 WHERE d.name = 'Design';
-
