@@ -58,3 +58,5 @@ https://drive.google.com/file/d/1Ch8kPha46Yq7ofqG6682wq2lk1gqkIv8/view
 
 ## Link to Repo:
 https://github.com/smcgarr13/Employee-Tracker
+
+## Reference Image: <img width="821" alt="Screenshot 2023-03-09 at 11 55 48 PM" src="https://user-images.githubusercontent.com/117788958/224235483-d3d06564-4de2-4506-ab77-b6cf1615dbab.png">
