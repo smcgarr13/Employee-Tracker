@@ -690,7 +690,7 @@ function getTotalDepartmentBudget() {
     if (err) {
       console.log(err);
     }
-    // display list of departments in a table
+    // show list of departments in a table
     console.table(results);
 
     // add "All Departments" option to the list of departments
@@ -707,6 +707,7 @@ function getTotalDepartmentBudget() {
       ])
       .then((answers) => {
         const departmentId = answers.departmentId;
+         // SQL query to get the total utilized budget for the selected department(s)
         let sql = `SELECT SUM(salary) AS total_budget
             FROM employee e
             JOIN role r ON e.role_id = r.id
@@ -714,10 +715,12 @@ function getTotalDepartmentBudget() {
         if (departmentId !== 0) {
           sql += ` WHERE d.id = ${departmentId}`;
         }
+        // query the database to get the total utilized budget for the selected department(s)
         db.query(sql, (err, results) => {
           if (err) {
             console.log(err);
           }
+          // show the total utilized budget for the selected department(s)
           if (departmentId === 0) {
             console.log(
               `The total budget for all departments is ${results[0].total_budget}`
